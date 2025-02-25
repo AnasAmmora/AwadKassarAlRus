@@ -64,25 +64,34 @@ public class OpponentController : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Player"))
+        if (collision.gameObject.CompareTag("Oponent") || collision.gameObject.CompareTag("Player"))
         {
-            // Get collision impact force
-            float impactForce = collision.relativeVelocity.magnitude;
+            Rigidbody otherRB = collision.gameObject.GetComponent<Rigidbody>();
 
-            // Stronger front lift (adjust values for better gameplay feel)
-            float upwardForce = Mathf.Clamp(impactForce * 80f, 800f, 2500f);
-            float forwardTilt = Mathf.Clamp(impactForce * 30f, 300f, 1000f);
+            if (otherRB != null)
+            {
+                Vector3 impactDirection = (collision.transform.position - transform.position).normalized;
+                impactDirection.y = 1f; // Apply an upward push to help flipping
 
-            // Apply force upwards & tilt the front more
-            carRB.AddForceAtPosition(Vector3.up * upwardForce, transform.position + transform.forward * 1.5f, ForceMode.Impulse);
-            carRB.AddTorque(transform.right * -forwardTilt, ForceMode.Impulse); // Tilts the front up
+                // Apply random force to make the crash feel more natural
+                float forceMagnitude = Random.Range(500f, 800f);
+                otherRB.AddForce(impactDirection * forceMagnitude, ForceMode.Impulse);
+
+                // Apply torque to create spinning effect
+                float torqueMagnitude = Random.Range(-300f, 300f);
+                otherRB.AddTorque(transform.right * torqueMagnitude, ForceMode.Impulse);
+            }
         }
-
-        if (collision.gameObject.CompareTag("Roof")) // Ensure opponent stops on roof contact
+        if (collision.gameObject.CompareTag("Roof"))
         {
-            StopOpponent();
+            Debug.Log("Oponent Wins!");
+            // Stop movement completely
+            GetComponent<Rigidbody>().isKinematic = true;
+            //collision.gameObject.GetComponentInParent<Rigidbody>().isKinematic = true;
         }
     }
+
+
 
     private void StopOpponent()
     {

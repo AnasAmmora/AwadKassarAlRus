@@ -252,12 +252,31 @@ public class NewCarController : MonoBehaviour
     #endregion
     private void OnCollisionEnter(Collision collision)
     {
+        if (collision.gameObject.CompareTag("Oponent") || collision.gameObject.CompareTag("Player"))
+        {
+            Rigidbody otherRB = collision.gameObject.GetComponent<Rigidbody>();
+
+            if (otherRB != null)
+            {
+                Vector3 impactDirection = (collision.transform.position - transform.position).normalized;
+                impactDirection.y = 1f; // Apply an upward push to help flipping
+
+                // Apply random force to make the crash feel more natural
+                float forceMagnitude = Random.Range(500f, 800f);
+                otherRB.AddForce(impactDirection * forceMagnitude, ForceMode.Impulse);
+
+                // Apply torque to create spinning effect
+                float torqueMagnitude = Random.Range(-300f, 300f);
+                otherRB.AddTorque(transform.right * torqueMagnitude, ForceMode.Impulse);
+            }
+        }
         if (collision.gameObject.CompareTag("Roof"))
         {
-
-            Destroy(GameObject.FindGameObjectWithTag("Oponent"));
-            Debug.Log("A");
-
+            Debug.Log("Player Wins!");
+            // Stop movement completely
+            //GetComponent<Rigidbody>().isKinematic = true;
+            collision.gameObject.GetComponentInParent<Rigidbody>().isKinematic = true;
         }
     }
+
 }
