@@ -25,19 +25,14 @@ public class NewCarController : MonoBehaviour
     private int[] wheelsIsGrounded = new int[4];
     private bool isGorunded = false;
 
-    //[Header("Inputs")]
-    //private float moveInput;
-    //private float steerInput;
+
     private int moveInput;
-    //private int steerInput;
     private bool isBraking;
 
     [Header("Car Settings")]
     [SerializeField] private float maxSpeed = 100f; // 100
     [SerializeField] private float acceleration = 25f; // 25
     [SerializeField] private float deceleration = 10f; // 10
-    //[SerializeField] private float steerStrength = 15f; // 15
-    [SerializeField] private AnimationCurve turningCurve;
     [SerializeField] private float dragCoefficient = 1f; // 1
     [SerializeField] private float brakingDeceleration = 100f; // 100
     [SerializeField] private float brakingDragCoefficient = 0.5f; // 0.5
@@ -46,8 +41,6 @@ public class NewCarController : MonoBehaviour
     private float carVelocityRatio = 0f;
 
     [Header("Visuals")]
-    [SerializeField] private float tireRotationSpeed = 3000f; // 3000
-    //[SerializeField] private float maxSteeringAngle = 30f; // 30
     [SerializeField] private float minSideSkidVelocity = 10f; // 10
 
     [Header("Audio")]
@@ -56,48 +49,46 @@ public class NewCarController : MonoBehaviour
     [SerializeField]
     [Range(1, 5)] private float maxPitch = 5f;
 
-    //[Header("Gyroscope")]
-    //private Gyroscope gyro; // Added variable for gyroscope
-
     public void SetMoveInput(int input)
     {
         moveInput = input;
     }
 
-    //public void SetSteerInput(int input)
-    //{
-    //    steerInput = input;
-    //}
     #region Main functions
     void Start()
     {
         carRB = GetComponent<Rigidbody>();
         moveInput = 0;
-        //steerInput = 0;
         isBraking = false;
 
-        //if (SystemInfo.supportsGyroscope)
-        //{
-        //    gyro = Input.gyro;
-        //    gyro.enabled = true;
-        //}
 
     }
-
-    void Update()
+    void LockXPosition()
     {
-        //GetPlayerInput();
-        //// Use gyroscope to control steerInput
-        //if (gyro != null && gyro.enabled)
-        //{
-        //    steerInput = Mathf.Clamp(gyro.rotationRateUnbiased.y, -1f, 1f);
-        //}
+        // Lock the X position to 0
+        Vector3 currentPosition = transform.position;
+        currentPosition.x = 0;
+        transform.position = currentPosition;
+
+        // Lock X velocity to 0 to prevent drifting
+        Vector3 currentVelocity = carRB.velocity;
+        currentVelocity.x = 0;
+        carRB.velocity = currentVelocity;
+
+        // Lock Y rotation to 0
+        Quaternion currentRotation = transform.rotation;
+        currentRotation.eulerAngles = new Vector3(currentRotation.eulerAngles.x, 0, currentRotation.eulerAngles.z);
+        transform.rotation = currentRotation;
+
+        // Optional: Lock Y angular velocity to 0 to prevent rotation
+        Vector3 currentAngularVelocity = carRB.angularVelocity;
+        currentAngularVelocity.y = 0;
+        carRB.angularVelocity = currentAngularVelocity;
     }
-
-
 
     private void FixedUpdate()
     {
+        LockXPosition();
         Suspension();
         GroundCheck();
         CalculateCarVelocity();
@@ -117,34 +108,10 @@ public class NewCarController : MonoBehaviour
         moveInput = -1;
     }
 
-    //public void OnLeftButtonPressed()
-    //{
-    //    steerInput = -1;
-    //}
-
-    //public void OnRightButtonPressed()
-    //{
-    //    steerInput = 1;
-    //}
-
     public void OnMoveButtonReleased()
     {
         moveInput = 0;
     }
-
-    //public void OnSteerButtonReleased()
-    //{
-    //    steerInput = 0;
-    //}
-    //public void OnBrakeButtonPressed()
-    //{
-    //    isBraking = true;
-    //}
-    //public void OnBrakeButtonReleased()
-    //{
-    //    isBraking = false;
-    //}
-
     #endregion
     #region Movement
     private void Movement()
@@ -153,10 +120,8 @@ public class NewCarController : MonoBehaviour
         {
             Acceleration();
             Deceleration();
-            //Turn();
-            //SidewayDrag();
+
         }
-        //Turn();
     }
     private void Acceleration()
     {
@@ -169,15 +134,11 @@ public class NewCarController : MonoBehaviour
     {
         carRB.AddForceAtPosition((isBraking ? brakingDeceleration : deceleration) * carVelocityRatio * -transform.forward, accelerationPoint.position, ForceMode.Acceleration);
     }
-    //private void Turn()
-    //{
-    //    carRB.AddRelativeTorque(steerStrength * steerInput * turningCurve.Evaluate(Mathf.Abs(carVelocityRatio)) * Mathf.Sign(carVelocityRatio) * carRB.transform.up, ForceMode.Acceleration);
-    //}
+
     private void SidewayDrag()
     {
         float currentSideWaySpeed = currentCarLocalVelocity.x;
         float dragMagnitude = -currentSideWaySpeed * ((isBraking ? brakingDragCoefficient : dragCoefficient));
-        //float dragMagnitude = -currentSideWaySpeed *  brakingDragCoefficient;
         Vector3 dragForce = transform.right * dragMagnitude;
         carRB.AddForceAtPosition(dragForce, carRB.worldCenterOfMass, ForceMode.Acceleration);
     }
@@ -185,52 +146,24 @@ public class NewCarController : MonoBehaviour
     #region Visuals
     private void Visuals()
     {
-        //TireVisuals();
         Vfx();
     }
-    //private void TireVisuals()
-    //{
-    //    float steeringAngle = maxSteeringAngle * steerInput;
-    //    for (int i = 0; i < tires.Length; i++)
-    //    {
-    //        if (i < 2)
-    //        {
-    //            frontTireParent[i].transform.localEulerAngles = new Vector3(frontTireParent[i].transform.localEulerAngles.x,
-    //                steeringAngle, frontTireParent[i].transform.localEulerAngles.z);
-    //            //tires[i].transform.Rotate(Vector3.right, tireRotationSpeed * carVelocityRatio * Time.deltaTime, Space.Self);
 
-    //        }
-    //        tires[i].transform.Rotate(Vector3.right, tireRotationSpeed * carVelocityRatio * Time.deltaTime, Space.Self);
-    //        //else
-    //        //{
-    //        //    tires[i].transform.Rotate(Vector3.right, tireRotationSpeed * moveInput * Time.deltaTime, Space.Self);
-    //        //}
-    //    }
-    //}
     private void Vfx()
     {
-        //if (isGorunded&&Mathf.Abs(currentCarLocalVelocity.x)>minSideSkidVelocity)
         if (isGorunded && Mathf.Abs(currentCarLocalVelocity.x) > minSideSkidVelocity && isBraking)
         {
-            //ToggleSkidMarks(true);
             ToggleSkidSmokes(true);
             ToggleSlidSound(true);
         }
         else
         {
-            //ToggleSkidMarks(false);
             ToggleSkidSmokes(false);
             ToggleSlidSound(false);
 
         }
     }
-    //private void ToggleSkidMarks(bool toggle)
-    //{
-    //    foreach (var skidMark in skidMarks)
-    //    {
-    //        skidMark.emitting = toggle;
-    //    }
-    //}
+
     private void ToggleSkidSmokes(bool toggle)
     {
         foreach (var smoke in skidSmokes)
@@ -286,13 +219,6 @@ public class NewCarController : MonoBehaviour
     #endregion
     #region Input Handling
 
-    //private void GetPlayerInput()
-    //{
-    //moveInput = Input.GetAxis("Vertical");
-    //steerInput = Input.GetAxis("Horizontal");
-
-    //steerInput = SimpleInput.GetAxis("Horizontal");
-    //}
     #endregion
     #region Suspension Functions
     private void Suspension()
