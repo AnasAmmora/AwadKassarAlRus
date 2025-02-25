@@ -10,8 +10,6 @@ public class NewCarController : MonoBehaviour
     [SerializeField] private LayerMask drivable;
     [SerializeField] private Transform accelerationPoint;
     [SerializeField] private GameObject[] tires = new GameObject[4];
-    [SerializeField] private GameObject[] frontTireParent = new GameObject[2];
-    [SerializeField] private TrailRenderer[] skidMarks = new TrailRenderer[2];
     [SerializeField] private ParticleSystem[] skidSmokes = new ParticleSystem[2];
     [SerializeField] private AudioSource engineSound, skidSound;
 
@@ -33,9 +31,7 @@ public class NewCarController : MonoBehaviour
     [SerializeField] private float maxSpeed = 100f; // 100
     [SerializeField] private float acceleration = 25f; // 25
     [SerializeField] private float deceleration = 10f; // 10
-    [SerializeField] private float dragCoefficient = 1f; // 1
     [SerializeField] private float brakingDeceleration = 100f; // 100
-    [SerializeField] private float brakingDragCoefficient = 0.5f; // 0.5
 
     private Vector3 currentCarLocalVelocity = Vector3.zero;
     private float carVelocityRatio = 0f;
@@ -135,13 +131,6 @@ public class NewCarController : MonoBehaviour
         carRB.AddForceAtPosition((isBraking ? brakingDeceleration : deceleration) * carVelocityRatio * -transform.forward, accelerationPoint.position, ForceMode.Acceleration);
     }
 
-    private void SidewayDrag()
-    {
-        float currentSideWaySpeed = currentCarLocalVelocity.x;
-        float dragMagnitude = -currentSideWaySpeed * ((isBraking ? brakingDragCoefficient : dragCoefficient));
-        Vector3 dragForce = transform.right * dragMagnitude;
-        carRB.AddForceAtPosition(dragForce, carRB.worldCenterOfMass, ForceMode.Acceleration);
-    }
     #endregion
     #region Visuals
     private void Visuals()
@@ -261,4 +250,14 @@ public class NewCarController : MonoBehaviour
         }
     }
     #endregion
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Roof"))
+        {
+
+            Destroy(GameObject.FindGameObjectWithTag("Oponent"));
+            Debug.Log("A");
+
+        }
+    }
 }
