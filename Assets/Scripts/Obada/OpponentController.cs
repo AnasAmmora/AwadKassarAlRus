@@ -85,6 +85,7 @@ public class OpponentController : MonoBehaviour
         if (collision.gameObject.CompareTag("Roof"))
         {
             Debug.Log("Oponent Wins!");
+            StopOpponent();
             // Stop movement completely
             GetComponent<Rigidbody>().isKinematic = true;
             //collision.gameObject.GetComponentInParent<Rigidbody>().isKinematic = true;
