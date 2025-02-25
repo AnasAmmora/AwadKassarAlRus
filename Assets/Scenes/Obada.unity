@@ -2364,7 +2364,7 @@ MonoBehaviour:
   carRB: {fileID: 1211648757}
   accelerationPoint: {fileID: 48389081}
   maxSpeed: 20
-  acceleration: 20
+  acceleration: 10
   deceleration: 10
   stoppingDistance: 5
 --- !u!195 &1211648753
@@ -3092,8 +3092,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.0516298, y: 0.49182808, z: 1.0669628}
-  m_Center: {x: 0.02581501, y: -0.4453264, z: -0.0073911548}
+  m_Size: {x: 1.0096349, y: 1.1159335, z: 0.725872}
+  m_Center: {x: 0.004817426, y: -0.13327366, z: -0.09836814}
 --- !u!114 &1454572745
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4259,11 +4259,11 @@ MonoBehaviour:
   skidSound: {fileID: 919132147564888124}
   restLength: 0.4
   springTravel: 0.5
-  springStiffness: 15000
+  springStiffness: 10000
   damperStiffness: 3000
   WheelRadius: 0.28
   maxSpeed: 30
-  acceleration: 25
+  acceleration: 10
   deceleration: 10
   brakingDeceleration: 50
   minSideSkidVelocity: 10
