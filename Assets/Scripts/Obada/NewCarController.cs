@@ -15,14 +15,13 @@ public class NewCarController : MonoBehaviour
 
     [Header("Suspension Settings")]
     [SerializeField] private float restLength; // spring length // 1
-    [SerializeField] private float springTravel; // spring max compress or extend destance // 0.5
-    [SerializeField] private float springStiffness; // spring max force that can be exert(when its fully compressed) // 30000
+    [SerializeField] private float springTravel; // spring max compress or extend distance // 0.5
+    [SerializeField] private float springStiffness; // spring max force that can be exerted (when fully compressed) // 30000
     [SerializeField] private float damperStiffness; // 3000
     [SerializeField] private float WheelRadius; // 0.33
 
     private int[] wheelsIsGrounded = new int[4];
-    private bool isGorunded = false;
-
+    private bool isGrounded = false;
 
     private int moveInput;
     private bool isBraking;
@@ -31,7 +30,6 @@ public class NewCarController : MonoBehaviour
     [SerializeField] private float maxSpeed = 100f; // 100
     [SerializeField] private float acceleration = 25f; // 25
     [SerializeField] private float deceleration = 10f; // 10
-    [SerializeField] private float brakingDeceleration = 100f; // 100
 
     private Vector3 currentCarLocalVelocity = Vector3.zero;
     private float carVelocityRatio = 0f;
@@ -57,42 +55,33 @@ public class NewCarController : MonoBehaviour
         moveInput = 0;
         isBraking = false;
 
-
     }
-    void LockXPosition()
+    void LockCarPositionAndRotation()
     {
-        // Lock the X position to 0
+        // Lock the X position, Y and Z rotations to 0
         Vector3 currentPosition = transform.position;
-        currentPosition.x = 0;
+        currentPosition.x = 0f;  // Lock X position
         transform.position = currentPosition;
 
-        // Lock X velocity to 0 to prevent drifting
-        Vector3 currentVelocity = carRB.velocity;
-        currentVelocity.x = 0;
-        carRB.velocity = currentVelocity;
-
-        // Lock Y rotation to 0
         Quaternion currentRotation = transform.rotation;
-        currentRotation.eulerAngles = new Vector3(currentRotation.eulerAngles.x, 0, currentRotation.eulerAngles.z);
+        //currentRotation.y = 0f;  // Lock Y rotation
+        currentRotation.z = 0f;  // Lock Z rotation
         transform.rotation = currentRotation;
-
-        // Optional: Lock Y angular velocity to 0 to prevent rotation
-        Vector3 currentAngularVelocity = carRB.angularVelocity;
-        currentAngularVelocity.y = 0;
-        carRB.angularVelocity = currentAngularVelocity;
     }
 
     private void FixedUpdate()
     {
-        LockXPosition();
+        LockCarPositionAndRotation();
         Suspension();
         GroundCheck();
         CalculateCarVelocity();
         Movement();
         Visuals();
         EngineSound();
+        CheckForUpsideDown(); // Check and stabilize when upside down
     }
     #endregion
+
     #region Innovations
     public void OnUpButtonPressed()
     {
@@ -109,16 +98,17 @@ public class NewCarController : MonoBehaviour
         moveInput = 0;
     }
     #endregion
+
     #region Movement
     private void Movement()
     {
-        if (isGorunded)
+        if (isGrounded)
         {
             Acceleration();
             Deceleration();
-
         }
     }
+
     private void Acceleration()
     {
         if (currentCarLocalVelocity.z < maxSpeed)
@@ -126,12 +116,13 @@ public class NewCarController : MonoBehaviour
             carRB.AddForceAtPosition(acceleration * moveInput * transform.forward, accelerationPoint.position, ForceMode.Acceleration);
         }
     }
+
     private void Deceleration()
     {
-        carRB.AddForceAtPosition((isBraking ? brakingDeceleration : deceleration) * carVelocityRatio * -transform.forward, accelerationPoint.position, ForceMode.Acceleration);
+        carRB.AddForceAtPosition(deceleration * carVelocityRatio * -transform.forward, accelerationPoint.position, ForceMode.Acceleration);
     }
-
     #endregion
+
     #region Visuals
     private void Visuals()
     {
@@ -140,7 +131,7 @@ public class NewCarController : MonoBehaviour
 
     private void Vfx()
     {
-        if (isGorunded && Mathf.Abs(currentCarLocalVelocity.x) > minSideSkidVelocity && isBraking)
+        if (isGrounded && Mathf.Abs(currentCarLocalVelocity.x) > minSideSkidVelocity && isBraking)
         {
             ToggleSkidSmokes(true);
             ToggleSlidSound(true);
@@ -149,7 +140,6 @@ public class NewCarController : MonoBehaviour
         {
             ToggleSkidSmokes(false);
             ToggleSlidSound(false);
-
         }
     }
 
@@ -167,22 +157,25 @@ public class NewCarController : MonoBehaviour
             }
         }
     }
+
     private void SetTirePosition(GameObject tire, Vector3 targetPosition)
     {
         tire.transform.position = targetPosition;
     }
     #endregion
-    #region Audio
 
+    #region Audio
     private void EngineSound()
     {
         engineSound.pitch = Mathf.Lerp(minPitch, maxPitch, Mathf.Abs(carVelocityRatio));
     }
+
     private void ToggleSlidSound(bool toggle)
     {
         skidSound.mute = !toggle;
     }
     #endregion
+
     #region Car Status Check
     private void GroundCheck()
     {
@@ -191,65 +184,53 @@ public class NewCarController : MonoBehaviour
         {
             tempGroundedWheels += wheelsIsGrounded[i];
         }
-        if (tempGroundedWheels > 1)
-        {
-            isGorunded = true;
-        }
-        else
-        {
-            isGorunded = false;
-        }
+        isGrounded = tempGroundedWheels > 1;
     }
+
     private void CalculateCarVelocity()
     {
         currentCarLocalVelocity = transform.InverseTransformDirection(carRB.velocity);
-        carVelocityRatio = currentCarLocalVelocity.z / maxSpeed;
+        carVelocityRatio = Mathf.Clamp01(currentCarLocalVelocity.z / maxSpeed);
     }
     #endregion
-    #region Input Handling
 
-    #endregion
     #region Suspension Functions
     private void Suspension()
     {
-        //physics ahhh logic
         for (int i = 0; i < rayPoints.Length; i++)
         {
             RaycastHit hit;
             float maxLength = restLength + springTravel;
-            if (Physics.Raycast(rayPoints[i].position, -rayPoints[i].up, out hit, maxLength + WheelRadius, drivable))
+            bool isWheelOnGround = Physics.Raycast(rayPoints[i].position, -rayPoints[i].up, out hit, maxLength + WheelRadius, drivable);
+
+            if (isWheelOnGround)
             {
                 wheelsIsGrounded[i] = 1;
                 float currentSpringLength = hit.distance - WheelRadius;
                 float springCompression = (restLength - currentSpringLength) / springTravel;
 
+                // Apply less damping when airborne
                 float springVelocity = Vector3.Dot(carRB.GetPointVelocity(rayPoints[i].position), rayPoints[i].up);
-                float dampForce = damperStiffness * springVelocity;
-
+                float airDampingFactor = isGrounded ? 1f : 0.2f;
+                float dampForce = damperStiffness * springVelocity * airDampingFactor;
 
                 float springForce = springStiffness * springCompression;
-
                 float netForce = springForce - dampForce;
 
                 carRB.AddForceAtPosition(netForce * rayPoints[i].up, rayPoints[i].position);
 
-                //Visuals
                 SetTirePosition(tires[i], hit.point + rayPoints[i].up * WheelRadius);
-
-                Debug.DrawLine(rayPoints[i].position, hit.point, Color.red);
             }
             else
             {
                 wheelsIsGrounded[i] = 0;
-
-                //Visuals
                 SetTirePosition(tires[i], rayPoints[i].position - rayPoints[i].up * maxLength);
-
-                Debug.DrawLine(rayPoints[i].position, rayPoints[i].position + (WheelRadius + maxLength) * -rayPoints[i].up, Color.green);
             }
         }
     }
     #endregion
+
+    #region Collision Handling
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.CompareTag("Oponent") || collision.gameObject.CompareTag("Player"))
@@ -273,10 +254,30 @@ public class NewCarController : MonoBehaviour
         if (collision.gameObject.CompareTag("Roof"))
         {
             Debug.Log("Player Wins!");
-            // Stop movement completely
-            //GetComponent<Rigidbody>().isKinematic = true;
             collision.gameObject.GetComponentInParent<Rigidbody>().isKinematic = true;
         }
     }
+    #endregion
 
+    #region Upside Down Handling
+    private void CheckForUpsideDown()
+    {
+        if (Vector3.Dot(transform.up, Vector3.down) > 0.5f)  // Car is upside down
+        {
+            // Limit the angular velocity to prevent excessive flipping
+            carRB.angularVelocity = Vector3.ClampMagnitude(carRB.angularVelocity, 5f);
+
+            // Apply downward force to simulate gravity when upside down
+            if (Mathf.Abs(currentCarLocalVelocity.z) < 10f)  // Slow speed
+            {
+                carRB.AddForce(Vector3.down * 50f, ForceMode.Acceleration);  // Stronger downward force
+            }
+
+            // Apply small corrective torque over time to slow down flipping
+            Vector3 torqueDirection = transform.right;
+            float correctiveTorque = Mathf.Lerp(0f, 300f, Mathf.Abs(currentCarLocalVelocity.z) / maxSpeed);
+            carRB.AddTorque(torqueDirection * correctiveTorque, ForceMode.Acceleration);
+        }
+    }
+    #endregion
 }
