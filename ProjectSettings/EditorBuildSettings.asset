@@ -14,4 +14,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Multiplayer.unity
     guid: 32323e0a70fb5664b820024c080516fc
+  - enabled: 1
+    path: Assets/Obada2/OpenningCutscene.unity
+    guid: 5a0eb4cf52aa2c54f8777943468d1dbd
   m_configObjects: {}
