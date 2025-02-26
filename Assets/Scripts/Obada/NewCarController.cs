@@ -12,6 +12,7 @@ public class NewCarController : MonoBehaviour
     [SerializeField] private GameObject[] tires = new GameObject[4];
     [SerializeField] private ParticleSystem[] skidSmokes = new ParticleSystem[2];
     [SerializeField] private AudioSource engineSound, skidSound;
+    [SerializeField] private GameObject particles;
 
     [Header("Suspension Settings")]
     [SerializeField] private float restLength; // spring length // 1
@@ -238,11 +239,20 @@ public class NewCarController : MonoBehaviour
                 otherRB.AddTorque(transform.right * torqueMagnitude, ForceMode.Impulse);
             }
         }
-        if (collision.gameObject.CompareTag("Roof"))
+        //if (collision.gameObject.CompareTag("Roof"))
+        //{
+        //    Debug.Log("Player Wins!");
+        //    collision.gameObject.GetComponentInParent<Rigidbody>().isKinematic = true;
+        //}
+    }
+
+    public void DestroyPlayerCar()
+    {
+        if(particles != null)
         {
-            Debug.Log("Player Wins!");
-            collision.gameObject.GetComponentInParent<Rigidbody>().isKinematic = true;
+        Instantiate(particles,transform.position,transform.rotation);
         }
+        Destroy(gameObject);
     }
     #endregion
 

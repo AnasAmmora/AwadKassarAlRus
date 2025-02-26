@@ -8,6 +8,7 @@ public class OpponentController : MonoBehaviour
     [SerializeField] private Transform player;
     [SerializeField] private Rigidbody carRB;
     [SerializeField] private Transform accelerationPoint;
+    [SerializeField] private GameObject particles;
 
     [Header("Movement Settings")]
     [SerializeField] private float maxSpeed = 100f;
@@ -85,10 +86,10 @@ public class OpponentController : MonoBehaviour
         if (collision.gameObject.CompareTag("Roof"))
         {
             Debug.Log("Oponent Wins!");
-            StopOpponent();
-            // Stop movement completely
-            GetComponent<Rigidbody>().isKinematic = true;
-            //collision.gameObject.GetComponentInParent<Rigidbody>().isKinematic = true;
+            //StopOpponent();
+            //GetComponent<Rigidbody>().isKinematic = true;
+
+
         }
     }
 
@@ -108,6 +109,12 @@ public class OpponentController : MonoBehaviour
         Debug.Log("Opponent hit the roof! Stopping completely.");
     }
 
-
-
+    public void DestroyPlayerCar()
+    {
+        if (particles != null)
+        {
+            Instantiate(particles, transform.position, transform.rotation);
+        }
+        Destroy(gameObject);
+    }
 }
