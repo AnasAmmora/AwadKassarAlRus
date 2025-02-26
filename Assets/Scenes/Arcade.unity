@@ -511,6 +511,7 @@ MonoBehaviour:
   skidSmokes: []
   engineSound: {fileID: 118759343}
   skidSound: {fileID: 118759342}
+  particles: {fileID: 0}
   restLength: 0.3
   springTravel: 0.3
   springStiffness: 30000
@@ -934,6 +935,7 @@ MonoBehaviour:
   skidSmokes: []
   engineSound: {fileID: 141874502}
   skidSound: {fileID: 141874501}
+  particles: {fileID: 0}
   restLength: 0.3
   springTravel: 0.3
   springStiffness: 30000
@@ -3163,7 +3165,7 @@ MonoBehaviour:
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 1920, y: 1080}
   m_ScreenMatchMode: 0
-  m_MatchWidthOrHeight: 0
+  m_MatchWidthOrHeight: 0.4
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
@@ -8315,6 +8317,7 @@ MonoBehaviour:
   player: {fileID: 141874503}
   carRB: {fileID: 1625230142}
   accelerationPoint: {fileID: 1259593394}
+  particles: {fileID: 0}
   maxSpeed: 30
   acceleration: 25
   deceleration: 10
