@@ -56,22 +56,9 @@ public class NewCarController : MonoBehaviour
         isBraking = false;
 
     }
-    void LockCarPositionAndRotation()
-    {
-        // Lock the X position, Y and Z rotations to 0
-        Vector3 currentPosition = transform.position;
-        currentPosition.x = 0f;  // Lock X position
-        transform.position = currentPosition;
-
-        Quaternion currentRotation = transform.rotation;
-        //currentRotation.y = 0f;  // Lock Y rotation
-        currentRotation.z = 0f;  // Lock Z rotation
-        transform.rotation = currentRotation;
-    }
 
     private void FixedUpdate()
     {
-        LockCarPositionAndRotation();
         Suspension();
         GroundCheck();
         CalculateCarVelocity();
