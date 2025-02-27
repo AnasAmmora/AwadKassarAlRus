@@ -261,7 +261,7 @@ public class NewCarController : MonoBehaviour
     {
         if (Vector3.Dot(transform.up, Vector3.down) > 0.5f)  // Car is upside down
         {
-            // Limit the angular velocity to prevent excessive flipping
+            // Limit the angular velocity to prevent excessive flipping.
             carRB.angularVelocity = Vector3.ClampMagnitude(carRB.angularVelocity, 5f);
 
             // Apply downward force to simulate gravity when upside down
