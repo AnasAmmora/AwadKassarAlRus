@@ -7,6 +7,7 @@ public class SecondRoofCollision : MonoBehaviour
     [SerializeField] private GameObject Player;
     [SerializeField] private GameObject Enemy;
     [SerializeField] private GameObject EnemyRoof;
+    [SerializeField] private AudioSource impactAudio;
 
     private void OnCollisionEnter(Collision collision)
     {
@@ -38,6 +39,7 @@ public class SecondRoofCollision : MonoBehaviour
         //{
         //    Player.GetComponent<OpponentController>().DestroyPlayerCar();
         //}
+        impactAudio.Play();
         GameData.FirstPlayerStarts++;
         GameManager.Instance.Endlevel();
     }
