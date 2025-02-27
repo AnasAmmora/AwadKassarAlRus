@@ -31,6 +31,10 @@ public class GameManager : MonoBehaviour
         //    Destroy(gameObject);
         //}
     }
+    private void Start()
+    {
+        SetQuality(GameData.CurrentGraphicsIndex);
+    }
 
     public void Endlevel()
     {
@@ -61,7 +65,11 @@ public class GameManager : MonoBehaviour
             winnerPlayerName.text = "THE WINNER IS Second Player";
         }
     }
-
+    public void SetQuality(int qualityIndex)
+    {
+        GameData.CurrentGraphicsIndex= qualityIndex;    
+        QualitySettings.SetQualityLevel(qualityIndex);
+    }
     public void PlayButtionSound()
     {
         buttonAudioSource.Play();

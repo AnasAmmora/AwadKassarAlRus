@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.Rendering;
@@ -12,7 +13,9 @@ public class MenuManager : MonoBehaviour
     [SerializeField] private GameObject mainPanel;
     [SerializeField] private GameObject playPanel;
     [SerializeField] private GameObject settingPanel;
-    [SerializeField] private Toggle isWithCutsceneToggle; 
+    [SerializeField] private Toggle isWithCutsceneToggle;
+    [SerializeField] private TMP_Dropdown graphicsDropdown;
+
 
     [Header("Audios")]
     [SerializeField] private AudioMixer audioMixer;
@@ -50,6 +53,8 @@ public class MenuManager : MonoBehaviour
         GameData.SecondPlayerStarts = 0;
 
         audioMixer.SetFloat("MusicVolume", -14);
+        SetQuality(GameData.CurrentGraphicsIndex);
+        graphicsDropdown.value = GameData.CurrentGraphicsIndex;
     }
     private void Update()
     {
@@ -105,6 +110,7 @@ public class MenuManager : MonoBehaviour
     }
     public void SetQuality(int qualityIndex)
     {
+        GameData.CurrentGraphicsIndex = qualityIndex;
         QualitySettings.SetQualityLevel(qualityIndex);
     }
     public void SetMasterVolume(float Volume)

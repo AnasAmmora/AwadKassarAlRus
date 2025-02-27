@@ -6784,6 +6784,7 @@ MonoBehaviour:
   playPanel: {fileID: 10770137}
   settingPanel: {fileID: 1218677722}
   isWithCutsceneToggle: {fileID: 1607259087}
+  graphicsDropdown: {fileID: 107917750}
   audioMixer: {fileID: 24100000, guid: b2e97feb889340a48aecc316348e8692, type: 2}
   backgroundMusicSource: {fileID: 1830464759}
   buttonAudioSource: {fileID: 245773074}
