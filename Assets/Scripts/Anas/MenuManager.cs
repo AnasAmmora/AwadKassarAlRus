@@ -18,10 +18,14 @@ public class MenuManager : MonoBehaviour
     [SerializeField] private AudioMixer audioMixer;
     [SerializeField] private AudioSource backgroundMusicSource;
     [SerializeField] private AudioSource buttonAudioSource;
+    [SerializeField] private AudioClip[] randomAudios;
+    [SerializeField] private AudioSource randomAudioSource;
 
     [Header("Animation")]
     [SerializeField] private Animator playerAnimator;
 
+
+    private int lastPlayedIndex = -1;
 
     private void Awake()
     {
@@ -39,10 +43,21 @@ public class MenuManager : MonoBehaviour
     private void Start()
     {
         PlaybackgroundMusic();
+        Invoke("PlayRandomSound", 4f);
+        
+
         GameData.FirstPlayerStarts = 0;
         GameData.SecondPlayerStarts = 0;
+
+        audioMixer.SetFloat("MusicVolume", -14);
+    }
+    private void Update()
+    {
+        
     }
 
+
+ 
     public void EnableMainPanel()
     {
         mainPanel.SetActive(true);
@@ -76,7 +91,6 @@ public class MenuManager : MonoBehaviour
     {
         buttonAudioSource.Play();
     }
-
     public void PlayMainAnimation()
     {
         playerAnimator.SetTrigger("Main");
@@ -89,12 +103,10 @@ public class MenuManager : MonoBehaviour
     {
         playerAnimator.SetTrigger("Setting");
     }
-
     public void SetQuality(int qualityIndex)
     {
         QualitySettings.SetQualityLevel(qualityIndex);
     }
-
     public void SetMasterVolume(float Volume)
     {
         audioMixer.SetFloat("MasterVolume", Volume);
@@ -103,7 +115,6 @@ public class MenuManager : MonoBehaviour
             audioMixer.SetFloat("MasterVolume", -80);
         }
     }  
-     
     public void SetMusicVolume(float Volume)
     {
         audioMixer.SetFloat("MusicVolume", Volume);
@@ -112,7 +123,6 @@ public class MenuManager : MonoBehaviour
             audioMixer.SetFloat("MusicVolume", -80);
         } 
     }
-
     public void SetSFXVolume(float Volume)
     {
         audioMixer.SetFloat("SFXVolume", Volume);
@@ -121,7 +131,6 @@ public class MenuManager : MonoBehaviour
             audioMixer.SetFloat("SFXVolume", -80);
         }
     }
-
     public void PlayMultiplayerScene()
     {
         SceneManager.LoadScene(2);
@@ -137,7 +146,26 @@ public class MenuManager : MonoBehaviour
             SceneManager.LoadScene(1);
         }
     }
+    public void PlayRandomSound()
+    {
+        if (randomAudios == null || randomAudios.Length == 0 || randomAudioSource == null)
+        {
+            Debug.LogWarning("Random sound cannot be played: Either the audio source or the clips array is empty/null.");
+            return;
+        }
 
+        int rand;
+        do
+        {
+            rand = Random.Range(0, randomAudios.Length);
+        } while (rand == lastPlayedIndex && randomAudios.Length > 1);
+
+        lastPlayedIndex = rand;
+        randomAudioSource.clip = randomAudios[rand];
+        randomAudioSource.Play();
+
+        Invoke("PlayRandomSound", 5f);
+    }
     public void Exit()
     {
         Application.Quit();

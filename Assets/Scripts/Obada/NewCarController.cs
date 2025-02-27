@@ -155,12 +155,18 @@ public class NewCarController : MonoBehaviour
     #region Audio
     private void EngineSound()
     {
-        engineSound.pitch = Mathf.Lerp(minPitch, maxPitch, Mathf.Abs(carVelocityRatio));
+        if(engineSound != null)
+        {
+            engineSound.pitch = Mathf.Lerp(minPitch, maxPitch, Mathf.Abs(carVelocityRatio));
+        }
     }
 
     private void ToggleSlidSound(bool toggle)
     {
-        skidSound.mute = !toggle;
+        if(skidSound != null)
+        {
+            skidSound.mute = !toggle;
+        }
     }
     #endregion
 
