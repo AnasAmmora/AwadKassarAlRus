@@ -8,113 +8,82 @@ public class OpponentController : MonoBehaviour
     [SerializeField] private Transform player;
     [SerializeField] private Rigidbody carRB;
     [SerializeField] private Transform accelerationPoint;
-    [SerializeField] private GameObject particles;
 
-    [Header("Movement Settings")]
-    [SerializeField] private float maxSpeed = 100f;
-    [SerializeField] private float acceleration = 25f;
-    [SerializeField] private float deceleration = 10f;
+    [Header("Car Settings")]
+    [SerializeField] private float maxSpeed = 50f;
+    [SerializeField] private float accelerationForce = 2000f;
+    [SerializeField] private float brakingForce = 3000f;
+    [SerializeField] private float gravityMultiplier = 2.5f;
     [SerializeField] private float stoppingDistance = 5f;
 
     private int moveInput;
+    private bool isGrounded;
 
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
         carRB = GetComponent<Rigidbody>();
+
+        // Allow NavMeshAgent to calculate paths, but not move the car directly
+        agent.updatePosition = false;
+        agent.updateRotation = false;
         agent.speed = maxSpeed;
-        agent.acceleration = acceleration;
         agent.stoppingDistance = stoppingDistance;
+
+        // Add some drag to avoid infinite sliding
+        carRB.drag = 0.1f;
+        carRB.angularDrag = 0.5f;
     }
 
     void Update()
     {
         if (player == null) return;
 
-        // Calculate relative position
-        Vector3 toPlayer = player.position - transform.position;
-        float dotProduct = Vector3.Dot(transform.forward, toPlayer.normalized);
+        // Set target for NavMeshAgent
+        agent.SetDestination(player.position);
 
-        // Decide movement direction
-        if (dotProduct > 0) // Player is in front
-        {
-            moveInput = 1;
-        }
-        else // Player is behind
-        {
-            moveInput = -1;
-        }
+        // Calculate movement direction
+        Vector3 toTarget = agent.steeringTarget - transform.position;
+        float dotProduct = Vector3.Dot(transform.forward, toTarget.normalized);
 
-        // Move the car
+        // Move forward if target is ahead, backward if behind
+        moveInput = dotProduct > 0 ? 1 : -1;
+    }
+
+    private void FixedUpdate()
+    {
+        ApplyGravity();
         MoveCar();
     }
 
     private void MoveCar()
     {
-        if (carRB == null) return;
+        if (!IsGrounded()) return;
 
-        if (moveInput != 0)
+        float currentSpeed = carRB.velocity.magnitude;
+
+        if (moveInput != 0 && currentSpeed < maxSpeed)
         {
-            carRB.AddForceAtPosition(acceleration * moveInput * transform.forward, accelerationPoint.position, ForceMode.Acceleration);
+            // Accelerate forward or backward
+            carRB.AddForceAtPosition(moveInput * accelerationForce * transform.forward, accelerationPoint.position, ForceMode.Force);
         }
         else
         {
-            carRB.AddForceAtPosition(deceleration * -transform.forward, accelerationPoint.position, ForceMode.Acceleration);
+            // Apply braking force to gradually stop
+            carRB.AddForce(-carRB.velocity.normalized * brakingForce, ForceMode.Force);
         }
     }
 
-    private void OnCollisionEnter(Collision collision)
+    private void ApplyGravity()
     {
-        if (collision.gameObject.CompareTag("Oponent") || collision.gameObject.CompareTag("Player"))
+        if (!IsGrounded())
         {
-            Rigidbody otherRB = collision.gameObject.GetComponent<Rigidbody>();
-
-            if (otherRB != null)
-            {
-                Vector3 impactDirection = (collision.transform.position - transform.position).normalized;
-                impactDirection.y = 1f; // Apply an upward push to help flipping
-
-                // Apply random force to make the crash feel more natural
-                float forceMagnitude = Random.Range(500f, 800f);
-                otherRB.AddForce(impactDirection * forceMagnitude, ForceMode.Impulse);
-
-                // Apply torque to create spinning effect
-                float torqueMagnitude = Random.Range(-300f, 300f);
-                otherRB.AddTorque(transform.right * torqueMagnitude, ForceMode.Impulse);
-            }
-        }
-        if (collision.gameObject.CompareTag("Roof"))
-        {
-            Debug.Log("Oponent Wins!");
-            //StopOpponent();
-            //GetComponent<Rigidbody>().isKinematic = true;
-
-
+            carRB.AddForce(Vector3.down * gravityMultiplier * Physics.gravity.y, ForceMode.Acceleration);
         }
     }
 
-
-
-    private void StopOpponent()
+    private bool IsGrounded()
     {
-        // Stop movement & rotation completely
-        carRB.velocity = Vector3.zero;
-        carRB.angularVelocity = Vector3.zero;
-        maxSpeed = 0f;
-        agent.speed = 0;
-        acceleration = 0f;
-        deceleration = 0f;
-
-        // Optional: Play a hit effect or sound
-        Debug.Log("Opponent hit the roof! Stopping completely.");
-    }
-
-    public void DestroyPlayerCar()
-    {
-        if (particles != null)
-        {
-            Instantiate(particles, transform.position, transform.rotation);
-        }
-        Destroy(gameObject);
+        return Physics.Raycast(transform.position, -transform.up, 1.2f);
     }
 }

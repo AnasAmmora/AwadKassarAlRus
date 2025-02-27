@@ -34,10 +34,10 @@ public class SecondRoofCollision : MonoBehaviour
         {
             Player.GetComponent<NewCarController>().DestroyPlayerCar();
         }
-        else if (Player.GetComponent<OpponentController>() != null)
-        {
-            Player.GetComponent<OpponentController>().DestroyPlayerCar();
-        }
+        //else if (Player.GetComponent<OpponentController>() != null)
+        //{
+        //    Player.GetComponent<OpponentController>().DestroyPlayerCar();
+        //}
         GameData.FirstPlayerStarts++;
         GameManager.Instance.Endlevel();
     }
